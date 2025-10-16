@@ -49,7 +49,7 @@ SPOTIFY_CLIENT_SECRET=your_client_secret_here
 
 **Run the application:**
 ```bash
-python app.py
+python main.py
 ```
 
 **Or use the Jupyter notebooks for development:**
