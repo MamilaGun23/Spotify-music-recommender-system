@@ -28,6 +28,10 @@ the recommender itself can be tested offline. For real login, copy
 `http://127.0.0.1:8888/callback` URI in your Spotify developer application.
 Never commit your values. Environment variables also work without a .env file.
 
+The Streamlit port and OAuth callback port must differ. For a registered callback
+of `http://127.0.0.1:8501/`, start the UI with
+`python -m streamlit run main.py --server.address 127.0.0.1 --server.port 8502`.
+
 OAuth opens a browser and loopback listener on the **machine running Streamlit**.
 Use this as a local desktop application, one login at a time; the callback listener
 is not a hosted multiuser authentication service. Login requests only
@@ -99,6 +103,7 @@ Recommender/
   songs_normalize.csv      Existing catalogue (provenance unverified)
 pages/analytics.py         Streamlit analytics page
 scripts/check_login.py     Optional manual account check
+scripts/check_live.py      Opt-in live refresh/search/playlist verification
 tests/                     Offline regression and app startup tests
 requirements.txt           Runtime dependencies
 requirements-dev.txt       Runtime plus test/lint tools
@@ -131,6 +136,10 @@ because Spotipy 2.26.0's public add-items helper serializes a bare array. See th
 [add-items API reference](https://developer.spotify.com/documentation/web-api/reference/add-items-to-playlist).
 
 See [REMEDIATION.md](REMEDIATION.md) for actual observed validation results.
-Live OAuth/playlist behaviour has not been manually verified in this remediation.
+See [LIVE_VERIFICATION.md](LIVE_VERIFICATION.md) for the successful live-account
+check and its limits. To repeat read-only live checks, run
+`python -m scripts.check_live`; add `--playlist` to create and retain one diagnostic
+playlist, verify addition acknowledgements, and attempt to read its tracks back.
+This opens Spotify's browser consent page and requires your own credentials.
 There is no verified deployment, benchmark, recommendation-accuracy measurement,
 collaborative filtering or live audio-feature ingestion.

@@ -45,8 +45,10 @@ mock-client recommendation for row zero. It is not a live OAuth check.
 
 ## Remaining limitations and safe claims
 
-- Live Spotify OAuth, search matching and playlist changes remain **manually
-  unverified** without personal credentials. No account mutations were performed.
+- Live OAuth, refresh, search, diagnostic playlist creation and persisted tracks
+  were subsequently verified for one configured account; see LIVE_VERIFICATION.md.
+  Only the clearly named diagnostic playlist was created; existing playlists
+  were not edited. Access for other accounts remains unverified.
 - Loopback OAuth is for a local desktop, one concurrent login at a time. Hosted
   multiuser OAuth and deployment are not implemented.
 - Dataset publisher/licence remain unknown. The CSV is unchanged (SHA-256
@@ -57,11 +59,11 @@ mock-client recommendation for row zero. It is not a live OAuth check.
 
 Safe to describe: a tested CSV content-based Streamlit recommender with stable
 track identity, explicit feature validation, offline regression tests and local
-Spotify integration code. Do not claim live audio-feature ingestion, verified
-live playlists, deployment, production readiness, recommendation accuracy or CI
-success from these checks.
+Spotify integration verified for one account. Do not claim live audio-feature
+ingestion, universal account access, deployment, production readiness,
+recommendation accuracy or CI success from these checks.
 
-## Follow-up: live-behaviour verification attempt
+## Initial live-verification attempt (before local configuration)
 
 The existing suite was rerun: **21 passed in 14.49s**. Current Spotify API
 documentation and the installed Spotipy source then exposed two gaps hidden by
@@ -79,9 +81,19 @@ The manual live command, `python -m scripts.check_login`, was also attempted.
 It reported **BLOCKED: missing SPOTIPY_CLIENT_ID, SPOTIPY_CLIENT_SECRET and
 SPOTIPY_REDIRECT_URI**. No .env was present and these keys were absent from
 process/user/machine environment settings. Values were never printed.
-No authenticated Spotify request or account mutation occurred, so live OAuth,
-search, refresh and playlist persistence remain unverified. Configure .env
-locally and complete browser consent before those checks can run.
+No authenticated Spotify request or account mutation occurred in that attempt,
+so live OAuth, search, refresh and playlist persistence were unverified at this
+stage. Local configuration and browser consent subsequently resolved the block.
 
 References: [Spotify migration guide](https://developer.spotify.com/documentation/web-api/tutorials/february-2026-migration-guide),
 [add-items request schema](https://developer.spotify.com/documentation/web-api/reference/add-items-to-playlist).
+
+## Live follow-up completed
+
+After local configuration and browser approval, real application authentication,
+user OAuth, token refresh, catalogue-track searches, diagnostic playlist creation,
+two-track addition and persisted playlist read-back all passed. The offline suite
+then passed again: **24 tests in 11.35s**. See [LIVE_VERIFICATION.md](LIVE_VERIFICATION.md)
+for exact observations, the retained diagnostic playlist, reproduction commands
+and limits. Earlier blocked/unverified statements describe the initial phase;
+the successful account-specific live check supersedes them.
