@@ -7,7 +7,7 @@ import os
 # Add the parent directory to the path so we can import from Recommender
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from Recommender.data import load_songs_from_csv, DEFAULT_CSV_PATH
+from Recommender.data import load_songs_from_csv
 from Recommender.analytics import show_analytics_dashboard
 from Recommender.login import check_authentication
 
@@ -32,7 +32,7 @@ def main():
     try:
         # Load the data
         with st.spinner("📥 Loading dataset..."):
-            df = load_songs_from_csv(DEFAULT_CSV_PATH, sp)
+            df = load_songs_from_csv(sp=sp)
         
         # Show quick dataset info
         with st.expander("🔍 Dataset Overview"):

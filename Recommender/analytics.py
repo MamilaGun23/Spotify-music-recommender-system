@@ -5,10 +5,9 @@ import numpy as np
 import streamlit as st
 import matplotlib.pyplot as plt
 import seaborn as sns
-from sklearn.metrics import pairwise_distances
 from sklearn.manifold import TSNE
 import plotly.express as px
-import plotly.graph_objects as go
+from Recommender.features import get_feature_columns
 
 def show_data_overview(df):
     """Show basic statistics and overview of the dataset."""
@@ -42,9 +41,7 @@ def show_data_overview(df):
 
 def get_numeric_features(df):
     """Get numeric feature columns for analysis."""
-    exclude_cols = ['artist', 'song', 'explicit', 'year', 'genre']
-    numeric_cols = df.select_dtypes(include=[np.number]).columns.tolist()
-    return [col for col in numeric_cols if col not in exclude_cols]
+    return [col for col in get_feature_columns() if col in df.columns]
 
 def show_audio_features_distribution(df):
     """Show distribution of audio features."""
@@ -122,7 +119,7 @@ def show_music_clusters(df):
     
     feature_cols = get_numeric_features(df)
     
-    if len(feature_cols) < 3:
+    if len(feature_cols) < 3 or len(df) < 2:
         st.warning("Need at least 3 numeric features for clustering visualization.")
         return
     
@@ -157,21 +154,21 @@ def show_music_clusters(df):
 
 def show_recommendation_metrics(df, recommendations_history=None):
     """Show metrics about recommendation performance."""
-    st.header("📈 Recommendation Performance")
+    st.header("📈 Catalogue Statistics")
     
     if recommendations_history:
         st.subheader("Recent Recommendations")
         for i, (song, recs) in enumerate(recommendations_history[-5:], 1):
-            st.write(f"{i}. **{song}** → {len(recs)} recommendations")
+            st.write(f"{i}. **{song}** → {recs} recommendations")
     
     # Model quality metrics
-    st.subheader("Model Quality Indicators")
+    st.subheader("Descriptive Indicators (not recommendation quality)")
     
     col1, col2, col3 = st.columns(3)
     
     with col1:
         # Feature coverage
-        feature_coverage = len(get_numeric_features(df)) / 12  # 12 is max typical features
+        feature_coverage = len(get_numeric_features(df)) / len(get_feature_columns())
         st.metric("Feature Coverage", f"{feature_coverage:.1%}")
     
     with col2:
@@ -180,10 +177,7 @@ def show_recommendation_metrics(df, recommendations_history=None):
         st.metric("Data Quality", f"{(1-missing_ratio):.1%}")
     
     with col3:
-        # Diversity score (based on feature variance)
-        feature_vars = df[get_numeric_features(df)].var().mean()
-        diversity_score = min(feature_vars * 100, 100)  # Normalized score
-        st.metric("Music Diversity", f"{diversity_score:.0f}/100")
+        st.metric("Unique Artists", df['artist'].nunique())
 
 def show_artist_insights(df):
     """Show insights about artists in the dataset."""
