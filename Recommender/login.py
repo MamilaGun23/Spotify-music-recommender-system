@@ -1,6 +1,5 @@
 # Recommender/login.py
 
-import os
 import streamlit as st
 from Recommender.auth import get_spotify_client
 
@@ -9,14 +8,13 @@ def render_login_page():
     Renders the Spotify login page and handles authentication.
     Returns authenticated Spotify client and user info if successful.
     """
-    st.set_page_config(page_title="Spotify Login", page_icon="🎧", layout="centered")
     
     st.title("🎧 Welcome to Music Recommender")
     st.markdown("""
     ### Connect your Spotify account to get started
     
     This app will:
-    - 📊 Analyze your music taste from our extensive dataset
+    - 📊 Compare catalogue tracks using CSV audio features
     - 🎵 Recommend similar songs you'll love
     - 🎧 Create personalized playlists on your Spotify account
     
@@ -27,7 +25,7 @@ def render_login_page():
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
         st.image("https://upload.wikimedia.org/wikipedia/commons/2/26/Spotify_logo_with_text.svg", 
-                width=200, use_column_width=True)
+                width=200)
     
     st.markdown("---")
     
@@ -52,15 +50,15 @@ def render_login_page():
                 
                 return sp, user_id, display_name
                 
-            except Exception as e:
-                st.error(f"❌ Login failed: {str(e)}")
+            except Exception:
+                st.error("Login failed. Check SPOTIPY configuration and the local callback, then retry.")
                 st.info("💡 Please check your credentials and try again.")
                 return None, None, None
     
     # Footer
     st.markdown("---")
     st.markdown(
-        "<small>🔒 Your Spotify data is handled securely and never stored on our servers.</small>",
+        "<small>Local desktop login. Tokens stay in this process until logout or shutdown.</small>",
         unsafe_allow_html=True
     )
     
@@ -83,6 +81,6 @@ def logout():
     """
     Clear authentication from session state.
     """
-    for key in ['sp', 'user_id', 'display_name', 'authenticated']:
+    for key in ['sp', 'user_id', 'display_name', 'authenticated', 'recommendations', 'selected_song', 'recommendations_history']:
         if key in st.session_state:
             del st.session_state[key]

@@ -122,7 +122,7 @@ class SpotifyUI:
     def render_main_header(self):
         """Render the main header section."""
         st.markdown('<h1 class="main-header">🎧 Music Recommender</h1>', unsafe_allow_html=True)
-        st.markdown("Discover new music based on your taste using our AI-powered recommendation system!")
+        st.markdown("Find tracks with similar audio features in the CSV catalogue.")
     
     def render_recommendation_section(self, df, available_songs, song_mapping):
         """
@@ -153,8 +153,8 @@ class SpotifyUI:
     
     def _render_quick_stats(self, df):
         """Render quick stats in the recommendation section."""
-        st.markdown("### 📈 Library Stats")
-        st.metric("Songs in Library", len(df))
+        st.markdown("### 📈 Catalogue Stats")
+        st.metric("Songs in Catalogue", len(df))
         st.metric("Artists", df['artist'].nunique())
     
     def render_recommendation_results(self, recs, selected_song_name, sp, user_id):
@@ -195,9 +195,13 @@ class SpotifyUI:
         with col1:
             if st.button("🎧 Create Spotify Playlist", type="secondary", use_container_width=True):
                 with st.spinner("Creating your playlist..."):
-                    playlist_url = create_playlist_from_recommendations(
-                        sp, user_id, selected_song_name, recs
-                    )
+                    try:
+                        playlist_url = create_playlist_from_recommendations(
+                            sp, user_id, selected_song_name, recs
+                        )
+                    except Exception:
+                        st.error("Playlist creation failed. Check Spotify access and track matches before retrying; a partial playlist may exist.")
+                        return
                 st.success("✅ Playlist created successfully!")
                 st.markdown(f"🎵 [Open Playlist on Spotify]({playlist_url})")
     
@@ -234,7 +238,7 @@ class SpotifyUI:
         st.markdown("""
         <div class="footer">
             <p>Built with ❤️ using Streamlit & Spotify API</p>
-            <p>Your music taste, amplified by AI</p>
+            <p>Audio-feature similarity from a local CSV catalogue</p>
         </div>
         """, unsafe_allow_html=True)
     

@@ -4,7 +4,7 @@ Streamlit app: Music Recommender with Dedicated UI
 
 import streamlit as st
 from Recommender.ui import SpotifyUI
-from Recommender.data import load_songs_from_csv, DEFAULT_CSV_PATH
+from Recommender.data import load_songs_from_csv
 from Recommender.recommend import recommend_from_song, get_available_songs, get_song_mapping
 from Recommender.playlist_utils import create_playlist_from_selected_songs
 from Recommender.login import render_login_page, check_authentication, logout
@@ -23,9 +23,9 @@ def main():
 
     # Load data
     try:
-        with ui.show_loading_message("🎵 Loading your music library..."):
-            df = load_songs_from_csv(DEFAULT_CSV_PATH, sp)
-        ui.show_success_message(f"✅ Loaded {len(df)} songs from your library")
+        with ui.show_loading_message("🎵 Loading the CSV catalogue..."):
+            df = load_songs_from_csv(sp=sp)
+        ui.show_success_message(f"✅ Loaded {len(df)} songs from the CSV catalogue")
     except Exception as e:
         ui.show_error_message(f"❌ Error loading songs: {e}")
         st.stop()
@@ -47,14 +47,15 @@ def main():
     selected_song_name, _ = ui.render_recommendation_section(df, available_songs, song_mapping)
     
     # Handle recommendations
-    if selected_song_name:
+    if selected_song_name is not None:
         with ui.show_loading_message("🔍 Analyzing music patterns..."):
             recs = recommend_from_song(selected_song_name, df)
-            track_recommendation(selected_song_name, recs, st.session_state)
+            selected_label = next(label for label, row_id in song_mapping.items() if row_id == selected_song_name)
+            track_recommendation(selected_label, recs, st.session_state)
         
         if not recs.empty:
             st.session_state.recommendations = recs
-            st.session_state.selected_song = selected_song_name
+            st.session_state.selected_song = selected_label
             ui.show_success_message(f"🎉 Found {len(recs)} similar songs!")
         else:
             ui.show_warning_message("🤔 No similar songs found. Try a different song!")
@@ -81,8 +82,8 @@ def main():
         else:
             try:
                 with ui.show_loading_message("Creating your custom playlist..."):
-                    selected_song_names = [song.split(" - ")[0] for song in selected_songs]
-                    selected_songs_df = df[df['song'].isin(selected_song_names)]
+                    selected_ids = [song_mapping[song] for song in selected_songs]
+                    selected_songs_df = df.set_index('row_id', drop=False).loc[selected_ids]
                     
                     playlist_url = create_playlist_from_selected_songs(
                         sp, user_id, playlist_name, playlist_desc, selected_songs_df # type: ignore
