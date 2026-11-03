@@ -116,9 +116,19 @@ python -m compileall -q Recommender pages main.py scripts tests
 
 Tests mock Spotify and cover duplicate identities, exact self-exclusion, malformed
 and short datasets, missing/nonfinite features, tie ordering, URL encoding, token
-isolation, logout, playlists and Streamlit startup. They require no credentials
+isolation, logout, playlists and Streamlit startup. Transport tests use the real
+pinned Spotipy client with HTTP intercepted, checking current endpoints, JSON
+request bodies and 100-item batch boundaries. They require no credentials
 or Spotify network access. For an intentional live account check only, run
-`python -m scripts.check_login`; this opens the local OAuth browser.
+`python -m scripts.check_login`; this opens the local OAuth browser and checks
+the account profile and a real catalogue-track search. It does not create a
+playlist. Missing configuration is reported as BLOCKED, never as a live pass.
+
+Playlist creation uses the authenticated-current-user endpoint rather than the
+removed user-specific endpoint (see [Spotify's migration guide](https://developer.spotify.com/documentation/web-api/tutorials/february-2026-migration-guide)).
+An explicit request adapter supplies the documented JSON object for additions,
+because Spotipy 2.26.0's public add-items helper serializes a bare array. See the
+[add-items API reference](https://developer.spotify.com/documentation/web-api/reference/add-items-to-playlist).
 
 See [REMEDIATION.md](REMEDIATION.md) for actual observed validation results.
 Live OAuth/playlist behaviour has not been manually verified in this remediation.

@@ -29,11 +29,14 @@ def create_playlist_from_selected_songs(sp, user_id, playlist_name, description,
             raise PlaylistError("At least one selected track was not found; no playlist was created.")
         uris.append(uri)
     try:
-        playlist = sp.user_playlist_create(
-            user=user_id, name=playlist_name, public=False, description=description,
+        playlist = sp.current_user_playlist_create(
+            name=playlist_name, public=False, description=description,
         )
         for offset in range(0, len(uris), 100):
-            sp.playlist_add_items(playlist_id=playlist["id"], items=uris[offset:offset + 100])
+            # Spotipy 2.26.0's public helper serializes a bare list. Spotify's
+            # documented body is an object; keep this compatibility adapter
+            # until the pinned helper supports {"uris": [...]} correctly.
+            sp._post(f"playlists/{playlist['id']}/items", payload={"uris": uris[offset:offset + 100]})
         return playlist["external_urls"]["spotify"]
     except Exception:
         raise PlaylistError("Spotify playlist operation failed; check your account before retrying (a partial playlist may exist).") from None

@@ -86,12 +86,13 @@ def test_encoded_search_links(tracks):
 def test_playlist_offline_search_and_batching(tracks):
     sp = MagicMock()
     sp.search.return_value = {"tracks": {"items": [{"uri": "spotify:track:dummy"}]}}
-    sp.user_playlist_create.return_value = {"id": "p", "external_urls": {"spotify": "https://example.test/p"}}
+    sp.current_user_playlist_create.return_value = {"id": "p", "external_urls": {"spotify": "https://example.test/p"}}
     result = create_playlist_from_selected_songs(sp, "user", "Mix", "CSV mix", tracks)
     assert result == "https://example.test/p"
     assert sp.search.call_args_list[1].kwargs["q"] == "track:Same artist:Second"
-    assert sp.user_playlist_create.call_args.kwargs["public"] is False
-    assert len(sp.playlist_add_items.call_args.kwargs["items"]) == 4
+    assert sp.current_user_playlist_create.call_args.kwargs["public"] is False
+    sp.user_playlist_create.assert_not_called()
+    assert len(sp._post.call_args.kwargs["payload"]["uris"]) == 4
 
 
 def test_failed_search_does_not_create_orphan_playlist(tracks):
@@ -99,4 +100,4 @@ def test_failed_search_does_not_create_orphan_playlist(tracks):
     sp.search.return_value = {"tracks": {"items": []}}
     with pytest.raises(PlaylistError):
         create_playlist_from_selected_songs(sp, "user", "Mix", "", tracks)
-    sp.user_playlist_create.assert_not_called()
+    sp.current_user_playlist_create.assert_not_called()
